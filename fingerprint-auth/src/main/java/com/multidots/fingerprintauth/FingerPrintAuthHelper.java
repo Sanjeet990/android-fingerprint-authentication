@@ -105,27 +105,12 @@ public class FingerPrintAuthHelper {
      * @return true if finger print authentication is supported.
      */
     private boolean checkFingerPrintAvailability(@NonNull Context context) {
-        // Check if we're running on Android 6.0 (M) or higher
+        // Fix for hardware not found in newer devices
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-
-            //Fingerprint API only available on from Android 6.0 (M)
-            FingerprintManagerCompat fingerprintManager = FingerprintManagerCompat.from(context);
-
-            if (!fingerprintManager.isHardwareDetected()) {
-
-                // Device doesn't support fingerprint authentication
-                mCallback.onNoFingerPrintHardwareFound();
-                return false;
-            } else if (!fingerprintManager.hasEnrolledFingerprints()) {
-
-                // User hasn't enrolled any fingerprints to authenticate with
-                mCallback.onNoFingerPrintRegistered();
-                return false;
-            }
-            return true;
+            return ActivityCompat.checkSelfPermission(this, Manifest.permission.USE_FINGERPRINT) == PackageManager.PERMISSION_GRANTED &&
+                   getSystemService(FingerprintManager.class).isHardwareDetected();
         } else {
-            mCallback.onBelowMarshmallow();
-            return false;
+            return FingerprintManagerCompat.from(this).isHardwareDetected();
         }
     }
 
